@@ -6,7 +6,6 @@ import time
 import torch
 import numpy as np
 from torch import nn
-import fedml_api.fedavg.SQLLogger as sql_logger
 from fedml_api.fedavg.SQLProvider import SQLDataProvider
 from fedml_api.fedavg.utils import compare_models
 from fedml_api.model.linear.lr import LogisticRegression
@@ -27,7 +26,6 @@ class FedAVGAggregator(object):
             self.flag_client_model_uploaded_dict[idx] = False
         self.model, _ = self.init_model(model)
         self.cached_model, _ = self.init_model(model)
-        self.log_cache = sql_logger.create_cache()
         self.model_influence = {}
 
     def init_model(self, model):
@@ -87,6 +85,7 @@ class FedAVGAggregator(object):
         num_clients = min(client_num_per_round, client_num_in_total)
         np.random.seed(round_idx)  # make sure for each comparison, we are selecting the same clients each round
         client_indexes = np.random.choice(range(client_num_in_total), num_clients, replace=False)
+        print(client_indexes)
         logging.info("client_indexes = %s" % str(client_indexes))
         return client_indexes
 
@@ -144,9 +143,9 @@ class FedAVGAggregator(object):
         print("####round: " + str(round_idx) + "####")
         round_key = "round_" + str(round_idx)
         train_stats, test_stats = self.test_model_on_all_clients(self.model, round_idx)
-        self.log_cache.put("round", round_idx)
-        self.log_cache.put("global_model_train", train_stats)
-        self.log_cache.put("global_model_test", test_stats)
+        print("round", round_idx)
+        print("global_model_train", train_stats)
+        print("global_model_test", test_stats)
         self.model_influence[round_key] = {}
         self.model_influence[round_key]["."] = {"train_stats": train_stats, "test_stats": test_stats}
         print("model[.]:", train_stats)
@@ -159,10 +158,10 @@ class FedAVGAggregator(object):
             sub_model.load_state_dict(model_params)
             train_stats, test_stats = self.test_model_on_all_clients(sub_model, round_idx)
             print("model[" + str(idx) + "]:", train_stats)
-            self.log_cache.put("model[" + str(idx) + "].train", train_stats)
-            self.log_cache.put("model[" + str(idx) + "].test", test_stats)
+            print("model[" + str(idx) + "].train", train_stats)
+            print("model[" + str(idx) + "].test", test_stats)
             influence = self._influence(sub_model)
-            self.log_cache.put("model[" + str(idx) + "].influence", influence)
+            print("model[" + str(idx) + "].influence", influence)
             influence_no_real, influence_both, influence_original = influence
             influence_ecl = self._influence_ecl(sub_model)
             self.model_influence[round_key][str(idx)] = {}
@@ -194,6 +193,8 @@ class FedAVGAggregator(object):
         client_round = 0
         for client_idx in range(self.args.client_num_in_total):
             train_data = self.provider.cache(client_idx, True)
+            if len(train_data) == 0:
+                continue
             train_batches = train_data.batch(self.batch_size)
 
             deletion_prediction = self.predict(model, train_batches)

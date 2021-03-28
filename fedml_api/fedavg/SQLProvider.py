@@ -71,8 +71,10 @@ class SQLDataProvider:
         return len(self.sheet)
 
     def batch(self, batch_size):
-        batch_size = len(self.x) if batch_size <= 0 or len(self.x) < batch_size else batch_size
+        if len(self.x) == 0:
+            return list()
         batch_data = list()
+        batch_size = len(self.x) if batch_size <= 0 or len(self.x) < batch_size else batch_size
         for i in range(0, len(self.x), batch_size):
             batched_x = self.x[i:i + batch_size]
             batched_y = self.y[i:i + batch_size]
@@ -84,3 +86,6 @@ class SQLDataProvider:
 
     def is_empty(self):
         return self.sheet is None
+
+    def __len__(self):
+        return len(self.x)
