@@ -182,7 +182,7 @@ class FedAVGAggregator(object):
         original = self.model.state_dict()
         sub = model.state_dict()
         l2_norm = torch.dist(original["linear.weight"], sub["linear.weight"], 2)
-        return l2_norm
+        return l2_norm.cpu()
 
     # noinspection PyUnresolvedReferences
     def _influence(self, model):
@@ -275,7 +275,7 @@ class FedAVGAggregator(object):
         labels = torch.tensor([])
         for prediction in predictions:
             predicted_label = torch.argmax(prediction)
-            labels = torch.cat((labels, predicted_label.reshape(1)))
+            labels = torch.cat((labels, predicted_label.reshape(1).float()))
         return labels
 
     def _infer(self, test_data):
@@ -293,7 +293,7 @@ class FedAVGAggregator(object):
                     predictions = model(x)
                 else:
                     predictions = torch.cat((predictions, model(x)))
-        return predictions
+        return predictions.cpu()
 
     def _infer_model(self, model, test_data):
         model.eval()
