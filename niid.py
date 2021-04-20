@@ -23,7 +23,7 @@ labels = np.array(
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
         3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     ])
-data = non_iid_partition_with_dirichlet_distribution(labels, 4, 4, 10)
+data = non_iid_partition_with_dirichlet_distribution(labels, 4, 4, 0.5)
 
 print(data[0])
 for i in data:
@@ -34,3 +34,5 @@ for i in data:
     l = np.array(list)
     for j in range(4):
         print("client-" + str(i) + ",label-" + str(j), np.where(l == j)[0].size / l.size)
+
+

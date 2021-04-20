@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 mpirun -np 3 -hostfile ./mpi_host_file python3 ./main_fedavg.py \
   --gpu_server_num 1 \
   --gpu_num_per_server 1 \
