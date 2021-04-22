@@ -56,10 +56,11 @@ class SQLDataProvider:
         self.sheet = None
 
     def cache(self, client_id, test_data=False):
-        user_id = 'f_' + str(client_id).zfill(5)
+        # user_id = 'f_' + str(client_id).zfill(5)
+        user_id = client_id
         self.sheet = Sheet()
         cursor = self.db.cursor()
-        cursor.execute("select data,label from sample where user_id=%s and is_test = %s", (user_id, test_data))
+        cursor.execute("select data,label from continuous_sample where user_id=%s and is_test = %s", (user_id, test_data))
         for row in cursor.fetchall():
             self.sheet.append(json.loads(row[0]), row[1])
         x, y = self.sheet.to_tensor()
