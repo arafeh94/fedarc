@@ -28,7 +28,7 @@ class Context:
         self.data_dict = {}
         self.test_data = SQLDataProvider(args()).cache(100)
 
-    def build(self, test_models=False):
+    def build(self, test_models=False, round_idx=0):
         print("Building Models --Started")
         for index, client_idx in enumerate(self.all_clients):
             data = SQLDataProvider(args()).cache(client_idx)
