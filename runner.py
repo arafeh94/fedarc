@@ -80,10 +80,10 @@ def test_a_case(test_case, title='start evaluation'):
     print("----------------------------------------------------")
 
 
-def fitness(chm):
-    aggregated = aggregate(dict_select(chm, model_stats), dict_select(chm, sample_dict))
+def fitness(test_case):
+    aggregated = aggregate(dict_select(test_case, model_stats), dict_select(test_case, sample_dict))
     influences = []
-    for key in chm:
+    for key in test_case:
         influence = influence_ecl(aggregated, model_stats[key])
         influences.append(influence)
     return statistics.variance(runner_genetic.normalize(influences))

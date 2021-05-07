@@ -1,5 +1,8 @@
 import copy
+import json
+import math
 import os
+import pprint
 import random
 import sys
 import time
@@ -12,8 +15,6 @@ from sklearn.cluster import KMeans
 from torch import nn
 
 from fedml_api.fedavg.SQLProvider import SQLDataProvider
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
 
 from fedml_api.model.linear.lr import LogisticRegression
 
@@ -126,6 +127,11 @@ def influence_ecl(aggregated, model):
     return l2_norm.numpy().min()
 
 
+def normalize(arr):
+    total = math.fsum(arr)
+    return [i / total for i in arr]
+
+
 class Clustered:
     def __init__(self, id_label_dict: dict):
         """
@@ -137,6 +143,7 @@ class Clustered:
 
     def reset(self):
         self.used_clusters = []
+        self.used_models = []
 
     def select(self, model_id):
         if model_id in self.used_models:
@@ -153,9 +160,14 @@ class Clustered:
             if label not in self.used_clusters and model_id not in self.used_models:
                 model_ids.append(model_id)
         if len(model_ids) == 0:
-            self.reset()
+            self.used_clusters = []
             return self.list()
         return model_ids
 
     def __len__(self):
         return len(self.id_label_dict.keys())
+
+
+def print(txt):
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(txt)

@@ -5,15 +5,15 @@ from numpy.random import default_rng
 import random
 import numpy as np
 
-import runner_methods
-from runner_methods import Clustered
+from ga import tools
 
 
-def select_random(genes: Clustered, size):
+def select_random(genes: tools.Clustered, size):
     if len(genes) < size:
         raise Exception("genes size is less than the requested population size")
     rng = default_rng()
     selected = []
+    genes.reset()
     while len(selected) < size:
         available = genes.list()
         random_choice = rng.choice(len(available), size=1, replace=False)[0]
@@ -23,7 +23,7 @@ def select_random(genes: Clustered, size):
     return selected
 
 
-def build_population(genes: Clustered, p_size, c_size):
+def build_population(genes: tools.Clustered, p_size, c_size):
     population = []
     for i in range(p_size):
         population.append(select_random(genes, c_size))
@@ -101,19 +101,22 @@ def clean(population):
     return temp
 
 
-def ga(fitness, genes: Clustered, desired, max_iter, r_cross, r_mut, p_size, c_size):
+def ga(fitness, genes: tools.Clustered, desired, max_iter, r_cross=0.1, r_mut=0.05, c_size=20, p_size=10):
     population = build_population(genes, p_size, c_size)
+    solution = None
     minimize = 99999999999
     n_iter = 0
     while n_iter < max_iter and minimize > desired:
+        print("Iteration Nb: ", n_iter + 1)
         scores = [fitness(chromosome) for chromosome in population]
         for index, ch in enumerate(population):
             if scores[index] < minimize:
                 minimize = scores[index]
-                print(ch, minimize)
+                solution = ch
+                print("Solution Found: ", solution, "Fitness: ", minimize)
         population = selection(population, scores, ratio=0.5)
         population = populate(population, int(p_size * 3 / 4))
-        population += build_population(genes, int(p_size / 4), 8)
+        population += build_population(genes, p_size - len(population), c_size)
         children = list()
         for i in range(0, len(population), 2):
             p1, p2 = population[i], population[i + 1]
@@ -121,8 +124,9 @@ def ga(fitness, genes: Clustered, desired, max_iter, r_cross, r_mut, p_size, c_s
                 mutation(c, genes, r_mut)
                 children.append(c)
         population = clean(children)
-    pass
+        n_iter += 1
+    return solution
 
 
-def fitness(arr):
+def variance(arr):
     return statistics.variance(normalize(arr))
